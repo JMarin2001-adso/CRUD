@@ -18,7 +18,7 @@ class DepartamentoService:
         try:
             self.con.ping(reconnect=True)#siempre hay que abrir por que es un proceso diferente
             with self.con.cursor(pymysql.cursors.DictCursor) as cursor:
-                sql="""SELECT d.id, designacion, u.Nombre,u.Direccion, u.Email  
+                sql="""SELECT d.id,d.cargo,d.areaAsignada , u.id,u.Nombre, u.Email 
                        FROM departamento d 
                        JOIN usuarios u ON CodigoUsuario=u.id"""
                 
@@ -39,13 +39,13 @@ class DepartamentoService:
                     status_code=500,
                 )
 
-    async def get_departamentoid (self, user_id: int):
+    async def get_by_departamentoid (self, user_id: int):
         """Consulta el departamento de un usuario específico."""
         try:
             self.con.ping(reconnect=True)
             with self.con.cursor(pymysql.cursors.DictCursor) as cursor:
-                sql = """SELECT designacion, u.Nombre, u.Direccion, u.Email 
-                         FROM departamento id 
+                sql = """SELECT d.cargo, d.areaAsignada, u.id, u.Nombre, u.Password 
+                         FROM departamento d 
                          JOIN usuarios u ON CodigoUsuario = u.id 
                          WHERE u.id = %s"""
                 cursor.execute(sql, (user_id,))
@@ -77,8 +77,8 @@ class DepartamentoService:
             self.con.ping(reconnect=True)#siempre hay que abrir por que es un proceso diferente
             with self.con.cursor() as cursor:
                  
-             sql="INSERT INTO departamento(cargo,designacion,CodigoUsuario) VALUES(%s,%s,%s)" #comodin %s, es para llamar los datos escritos, es decir, nombre equivale a %s
-             cursor.execute(sql,(departamento_data.cargo,departamento_data.designacion,departamento_data.CodigoUsuario))#todos los datos tienen que ir en orden como los hayamos colocado 
+             sql="INSERT INTO departamento(cargo,areaAsignada,CodigoUsuario) VALUES(%s,%s,%s)" #comodin %s, es para llamar los datos escritos, es decir, nombre equivale a %s
+             cursor.execute(sql,(departamento_data.cargo,departamento_data.areaAsignada,departamento_data.CodigoUsuario))#todos los datos tienen que ir en orden como los hayamos colocado 
             
             self.con.commit()
                 
@@ -107,8 +107,6 @@ class DepartamentoService:
         """Cierra la conexión con la base de datos."""
         if self.con:
             self.con.close()
-
-           
 
 
 

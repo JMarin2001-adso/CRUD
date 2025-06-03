@@ -52,13 +52,13 @@ async def update_user(user_id: int, user_data: User):
     return await user_service.update_user(user_id, user_data)
 
 @routes_d.get("/get-departamento/")
-async def get_departamento():
+async def get_all_departamento():
     result =await departamento_service.get_departamento() #consulta se usa get
     return result
 
 @routes_d.get("/get-departamentoid/{id_departamentoid}")
 async def get_departamentoid(id_departamentoid: int):
-    return await departamento_service.get_departamentoid(id_departamentoid) #consulta se usa get
+    return await departamento_service.get_by_departamentoid(id_departamentoid) #consulta se usa get
   
 @routes_d.post("/create-departamento/")
 async def create_departamento(departamento: departamento):

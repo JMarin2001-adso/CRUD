@@ -6,7 +6,7 @@ from models.user_model import User
 
 class departamento(BaseModel):
     cargo:str
-    designacion:int
+    areaAsignada:str
     CodigoUsuario: Union[int,User]
     #CodigoDepartamento:
 
