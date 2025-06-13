@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from routes.routes import routes,routes_d
+from routes.auth_routes import auth_routes
 
 
 app=FastAPI()
@@ -17,6 +18,7 @@ load_dotenv()
 
 app.include_router(routes)
 app.include_router(routes_d)
+app.include_router(auth_routes)
 
 app.add_middleware(
     CORSMiddleware,
@@ -42,7 +44,7 @@ def message():
     """
     return HTMLResponse("<h1>ejercio de creacion crud</h1>")
 
-if __name__=="__name__":
+if __name__=="__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
 
 
