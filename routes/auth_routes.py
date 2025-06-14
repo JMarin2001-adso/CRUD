@@ -7,13 +7,14 @@ import pymysql.cursors
 auth_routes = APIRouter(prefix="/auth", tags=["auth"])
 
 class RegistroRequest(BaseModel):
-    nombre: str
-    correo: str
-    contrasena: str
+    Nombre: str
+    Direccion: str
+    Email: str
+    Password: str
 
 class LoginRequest(BaseModel):
-    correo: str
-    contrasena: str
+    Email: str
+    Password: str
 
 @auth_routes.post("/registro")
 def registrar_usuario(user: RegistroRequest):
@@ -23,7 +24,7 @@ def registrar_usuario(user: RegistroRequest):
         with con.cursor() as cursor:
             # Verifica si el correo ya existe
             check_sql = "SELECT COUNT(*) FROM usuarios WHERE Email=%s"
-            cursor.execute(check_sql, (user.correo,))
+            cursor.execute(check_sql, (user.Email,))
             result = cursor.fetchone()
             if result[0] > 0:
                 raise HTTPException(status_code=400, detail="Correo ya registrado")
@@ -31,9 +32,9 @@ def registrar_usuario(user: RegistroRequest):
             # Inserta nuevo usuario
             insert_sql = """
                 INSERT INTO usuarios (Nombre, Email, Password, Direccion, Estado)
-                VALUES (%s, %s, %s, '', 1)
+                VALUES (%s, %s, %s, %s, '', 1)
             """
-            cursor.execute(insert_sql, (user.nombre, user.correo, user.contrasena))
+            cursor.execute(insert_sql, (user.Nombre, user.Email,user.Password, user.Direccion))
             con.commit()
 
             return {"mensaje": "Usuario registrado correctamente", "user_id": cursor.lastrowid}
@@ -49,14 +50,21 @@ def login(user: LoginRequest):
         with con.cursor(pymysql.cursors.DictCursor) as cursor:
             login_sql = """
                 SELECT id, Nombre FROM usuarios
-                WHERE Email = %s AND Password = %s AND Estado = 1
+                WHERE TRIM(LOWER(Email)) = TRIM(LOWER(%s)) AND Password = %s AND Estado = 1
             """
-            cursor.execute(login_sql, (user.correo, user.contrasena))
+            # Normaliza el email antes de mandarlo
+            email_normalizado = user.Email.strip().lower()
+            cursor.execute(login_sql, (email_normalizado, user.Password))
             result = cursor.fetchone()
 
             if not result:
                 raise HTTPException(status_code=401, detail="Credenciales inválidas o usuario inactivo")
 
-            return {"mensaje": "Login exitoso", "usuario": result["Nombre"]}
+            return {
+                "mensaje": "Login exitoso",
+                "usuario": result["Nombre"],
+                "usuario_id": result["id"]
+            }
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en el login: {str(e)}")

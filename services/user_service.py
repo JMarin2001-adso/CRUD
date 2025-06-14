@@ -76,6 +76,47 @@ class UserService:
                   )
         finally:#cerrar conexion terminos de seguridad
             self.close_connection()
+
+    async def get_user_dashboard_info(self, user_id: int):
+        """Obtiene solo los datos necesarios para el dashboard: nombre, cargo y estado"""
+        try:
+            self.con.ping(reconnect=True)
+            with self.con.cursor(pymysql.cursors.DictCursor) as cursor:
+             sql = """
+                SELECT u.id, u.Nombre, u.Estado, d.cargo
+                FROM usuarios u
+                LEFT JOIN departamento d ON d.CodigoUsuario = u.id
+                WHERE u.id = %s
+            """
+            cursor.execute(sql, (user_id,))
+            user = cursor.fetchone()
+
+            if user:
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "success": True,
+                        "data": {
+                            "id": user["id"],
+                            "Nombre": user["Nombre"],
+                            "cargo": user["cargo"] or "Sin cargo",
+                            "Estado": user["Estado"]
+                        }
+                    }
+                )
+            else:
+                return JSONResponse(
+                    status_code=404,
+                    content={"success": False, "message": "Usuario no encontrado"}
+                )
+
+        except Exception as e:
+           return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": f"Error: {str(e)}"}
+        )
+        finally:
+            self.close_connection()        
         
     async def create_user(self,user_data:User):
         try:
